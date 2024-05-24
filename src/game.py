@@ -1,4 +1,5 @@
 import time
+import math
 from stellar import StellarUnicorn
 from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
 from pimoroni_i2c import PimoroniI2C
@@ -52,29 +53,42 @@ DT = 1/FPS
 
 class Paddle:
     def __init__(self):
+        # layout
         self.width = 5
+        # position
         self.y = SCREEN_HEIGHT - 2
         self.x = (SCREEN_WIDTH - self.width) // 2
-        self.v_x = 0
-        self.bounce_c = 0.2
-        self.g_factor = 9.81 * 3;
-
-    def draw(self):
-        graphics.set_pen(PEN_YELLOW)
-        p_x = int(self.x) 
-        graphics.rectangle(p_x, self.y, self.width, 1)
+        # physics
+        self.v = 0
+        self.v_max = SCREEN_WIDTH * 2.5
+        self.a = 2
+        self.bounce_c = 0.8
+        # input
+        self.input_min = 0.075
+        self.input_max = 0.6
+        self.input_f = self.v_max / (self.input_max - self.input_min)
 
     def update(self):
         input_x = -1 * msa.get_x_axis() # x axis is inverted
-        acc_x = self.g_factor * input_x # input is normalized to gravity
-        self.v_x = self.v_x + acc_x * DT
-        self.x += self.v_x * DT
+        clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
+        target_v = self.input_f * math.copysign(
+            clamp_x, # clamp
+            input_x # re-sign
+        )
+        self.v = self.v + (target_v - self.v) * self.a * DT
+        print(input_x, clamp_x, target_v, self.v)
+        self.x += self.v * DT
         if self.x < 0:
             self.x = 0
-            self.v_x = -self.v_x * self.bounce_c
+            self.v = -self.v * self.bounce_c
         if self.x > SCREEN_WIDTH - self.width:
             self.x = SCREEN_WIDTH - self.width
-            self.v_x = -self.v_x * self.bounce_c
+            self.v = -self.v * self.bounce_c
+
+    def draw(self):
+        graphics.set_pen(PEN_YELLOW)
+        p_x = round(self.x)
+        graphics.rectangle(p_x, self.y, self.width, 1)
 
 # = game loop ===================================================================
 
