@@ -139,6 +139,14 @@ class Ball:
             self.vy = -self.vy
             self.y += self.vy * DT * 2
 
+        # hits bricks
+        for b in bricks.copy():
+            if check_collision(self, b):
+                print("hit")
+                bricks.remove(b)
+                self.vy = -self.vy
+                self.y += self.vy * DT * 2
+
     def draw(self):
         graphics.set_pen(PEN_WHITE)
         p_x = round(self.x)
