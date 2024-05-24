@@ -12,39 +12,36 @@ msa = BreakoutMSA311(i2c)
 # setup stellar unicorn (led matrix)
 su = StellarUnicorn()
 graphics = PicoGraphics(DISPLAY)
-width = StellarUnicorn.WIDTH
-height = StellarUnicorn.HEIGHT
+WIDTH = StellarUnicorn.WIDTH
+HEIGHT = StellarUnicorn.HEIGHT
 
-print(width, height)
+print(WIDTH, HEIGHT)
 
 su.set_brightness(0.5)
 
 class Paddle:
-    def __init__(self, x, y, width):
+    def __init__(self, x, y, w):
         self.x = x
         self.y = y
-        self.width = width
+        self.width = w
 
-    def draw(self, graphics):
-        graphics.set_pen(graphics.create_pen(255, 255, 0))
+    def draw(self, g):
+        graphics.set_pen(g.create_pen(255, 255, 0))
         graphics.rectangle(self.x, self.y, self.width, 1)
 
     def update(self):
         xf = msa.get_x_axis()
-        if (xf > 0.1):
+        if xf > 0.1:
             self.x -= 1
-        elif (xf < -0.1):
+        elif xf < -0.1:
             self.x += 1
-        if (self.x < 0):
-            self.x = 0
-        if (self.x + self.width > width):
-            self.x = width - self.width
+        self.x = max(0, self.x)
+        self.x = min(WIDTH - self.width, self.x)
 
-paddle = Paddle(0, height - 2, 5)
+paddle = Paddle(0, HEIGHT - 2, 5)
 
 # game loop
 while True:
-    
     # update
     paddle.update()
 
