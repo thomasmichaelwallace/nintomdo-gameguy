@@ -19,19 +19,42 @@ print(width, height)
 
 su.set_brightness(0.5)
 
+class Paddle:
+    def __init__(self, x, y, width):
+        self.x = x
+        self.y = y
+        self.width = width
+
+    def draw(self, graphics):
+        graphics.set_pen(graphics.create_pen(255, 255, 0))
+        graphics.rectangle(self.x, self.y, self.width, 1)
+
+    def update(self):
+        xf = msa.get_x_axis()
+        if (xf > 0.1):
+            self.x -= 1
+        elif (xf < -0.1):
+            self.x += 1
+        if (self.x < 0):
+            self.x = 0
+        if (self.x + self.width > width):
+            self.x = width - self.width
+
+paddle = Paddle(0, height - 2, 5)
+
 # game loop
 while True:
-    xf = msa.get_x_axis()
-
-    x = int((-xf + 1) * width / 2)
-    y = height // 2 # center y
-    print(x, y)
     
+    # update
+    paddle.update()
+
+    # clear screen
     graphics.set_pen(graphics.create_pen(0, 0, 0))
     graphics.clear()
-    graphics.set_pen(graphics.create_pen(255, 255, 255))
-    graphics.pixel(x, y)
+
+    # draw
+    paddle.draw(graphics)
 
     su.update(graphics)
 
-    time.sleep(0.1)
+    time.sleep(1/25)
