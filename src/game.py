@@ -1,5 +1,6 @@
 import time
 import math
+from random import randint
 from stellar import StellarUnicorn
 from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
 from pimoroni_i2c import PimoroniI2C
@@ -76,7 +77,6 @@ class Paddle:
             input_x # re-sign
         )
         self.v = self.v + (target_v - self.v) * self.a * DT
-        print(input_x, clamp_x, target_v, self.v)
         self.x += self.v * DT
         if self.x < 0:
             self.x = 0
@@ -90,10 +90,65 @@ class Paddle:
         p_x = round(self.x)
         graphics.rectangle(p_x, self.y, self.width, 1)
 
+class Ball:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.vx = 0
+        self.vy = 0
+        self.init()
+
+    def init(self):
+        self.y = paddle.y - 1
+        self.x = paddle.x + paddle.width // 2
+        self.vx = randint(-2, 2)
+        self.vy = -4
+
+    def update(self):
+        self.x += self.vx * DT
+        self.y += self.vy * DT
+
+        # out of bounds
+        if self.x < 0:
+            self.x = 0
+            self.vx = -self.vx
+        if self.x > SCREEN_WIDTH - 1:
+            self.x = SCREEN_WIDTH - 1
+            self.vx = -self.vx
+        if self.y < 0:
+            self.y = 0
+            self.vy = -self.vy
+
+        # game over
+        if self.y > SCREEN_HEIGHT + 1:
+            self.init()
+
+        # hits paddle
+        if check_collision(self, paddle):
+            self.vy = -self.vy
+            self.y += self.vy * DT * 2
+
+    def draw(self):
+        graphics.set_pen(PEN_WHITE)
+        p_x = round(self.x)
+        p_y = round(self.y)
+        graphics.pixel(p_x, p_y)
+
+def check_collision(pixel, line):
+    p_x = round(pixel.x)
+    p_y = round(pixel.y)
+    l_y = round(line.y)
+    l_x0 = round(line.x)
+    l_x1 = round(line.x + line.width)
+    if (p_x >= l_x0 and p_x < l_x1) and (p_y == l_y):
+        return True
+    return False
+
 # = game loop ===================================================================
 
 # init
 paddle = Paddle()
+ball = Ball()
 
 print("Game started")
 
@@ -101,11 +156,13 @@ print("Game started")
 while True:
     # _update
     paddle.update()
+    ball.update()
 
     # _draw
     graphics.set_pen(PEN_BLACK)
     graphics.clear()
     paddle.draw()
+    ball.draw()
     su.update(graphics)
 
     time.sleep(DT)
