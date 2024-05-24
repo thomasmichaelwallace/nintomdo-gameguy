@@ -90,6 +90,17 @@ class Paddle:
         p_x = round(self.x)
         graphics.rectangle(p_x, self.y, self.width, 1)
 
+class Brick:
+    def __init__(self, x, y, width, pen):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.pen = pen
+
+    def draw(self):
+        graphics.set_pen(self.pen)
+        graphics.rectangle(self.x, self.y, self.width, 1)
+
 class Ball:
     def __init__(self):
         self.x = 0
@@ -149,6 +160,28 @@ def check_collision(pixel, line):
 # init
 paddle = Paddle()
 ball = Ball()
+bricks = [
+    # row 1
+    Brick(0, 1, 4, PEN_GREEN),
+    Brick(4, 1, 4, PEN_DARK_GREEN),
+    Brick(8, 1, 4, PEN_GREEN),
+    Brick(12, 1, 4, PEN_DARK_GREEN),
+    # row 2
+    Brick(2, 2, 3, PEN_RED),
+    Brick(5, 2, 3, PEN_ORANGE),
+    Brick(8, 2, 3, PEN_RED),
+    Brick(11, 2, 3, PEN_ORANGE),
+    # row 3
+    Brick(0, 3, 4, PEN_BLUE),
+    Brick(4, 3, 4, PEN_DARK_PURPLE),
+    Brick(8, 3, 4, PEN_BLUE),
+    Brick(12, 3, 4, PEN_DARK_PURPLE),
+    # row 4
+    Brick(2, 4, 3, PEN_PINK),
+    Brick(5, 4, 3, PEN_BROWN),
+    Brick(8, 4, 3, PEN_PINK),
+    Brick(11, 4, 3, PEN_BROWN),
+]
 
 print("Game started")
 
@@ -163,6 +196,8 @@ while True:
     graphics.clear()
     paddle.draw()
     ball.draw()
+    for brick in bricks:
+        brick.draw()
     su.update(graphics)
 
     time.sleep(DT)
