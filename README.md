@@ -1,4 +1,4 @@
-# tilt-out
+# tilt-out
 
 A game of breakout controlled by tilting yourself (or someone else)!
 
