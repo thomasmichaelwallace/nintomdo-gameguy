@@ -7,5 +7,9 @@
     "micropico.openOnStart": true,
     "python.analysis.typeshedPaths": [
         "typings"
+    ],
+    "cSpell.words": [
+        "picographics",
+        "Pimoroni"
     ]
 }

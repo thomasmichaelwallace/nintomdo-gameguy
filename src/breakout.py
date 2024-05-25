@@ -1,54 +1,14 @@
-import time
 import math
 from random import randint
 from stellar import StellarUnicorn
-from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
-from pimoroni_i2c import PimoroniI2C
+from picographics import PicoGraphics
 from breakout_msa311 import BreakoutMSA311
 
 # = setup ======================================================================
 
-# setup msa311 (accelerometer) breakout board
-PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
-i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
-msa = BreakoutMSA311(i2c)
-
-# setup stellar unicorn (led matrix)
-su = StellarUnicorn()
-graphics = PicoGraphics(DISPLAY)
-
-def hex_to_pen(gfx, hex_color):
-    hex_color = hex_color.lstrip('#')
-    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    pen = gfx.create_pen(r, g, b)
-    return pen
-# (https://lospec.com/palette-list/pico-8):
-PEN_BLACK=hex_to_pen(graphics, "#000000")
-PEN_DARK_BLUE=hex_to_pen(graphics, "#1d2b53")
-PEN_DARK_PURPLE=hex_to_pen(graphics, "#7e2553")
-PEN_DARK_GREEN=hex_to_pen(graphics, "#008751")
-PEN_BROWN=hex_to_pen(graphics, "#ab5236")
-PEN_DARK_GRAY=hex_to_pen(graphics, "#5f574f")
-PEN_LIGHT_GRAY=hex_to_pen(graphics, "#c2c3c7")
-PEN_WHITE=hex_to_pen(graphics, "#fff1e8")
-PEN_RED=hex_to_pen(graphics, "#ff004d")
-PEN_ORANGE=hex_to_pen(graphics, "#ffa300")
-PEN_YELLOW=hex_to_pen(graphics, "#ffec27")
-PEN_GREEN=hex_to_pen(graphics, "#00e436")
-PEN_BLUE=hex_to_pen(graphics, "#29adff")
-PEN_INDIGO=hex_to_pen(graphics, "#83769c")
-PEN_PINK=hex_to_pen(graphics, "#ff77a8")
-PEN_PEACH=hex_to_pen(graphics, "#ffccaa")
-
+PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
 SCREEN_HEIGHT = StellarUnicorn.HEIGHT
-
-su.set_brightness(0.4)
-
-# = options ====================================================================
-
-FPS = 30
-DT = 1/FPS
 
 # = entities ===================================================================
 
@@ -69,15 +29,15 @@ class Paddle:
         self.input_max = 0.6
         self.input_f = self.v_max / (self.input_max - self.input_min)
 
-    def update(self):
+    def update(self, msa: BreakoutMSA311, dt):
         input_x = -1 * msa.get_x_axis() # x axis is inverted
         clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
         target_v = self.input_f * math.copysign(
             clamp_x, # clamp
             input_x # re-sign
         )
-        self.v = self.v + (target_v - self.v) * self.a * DT
-        self.x += self.v * DT
+        self.v = self.v + (target_v - self.v) * self.a * dt
+        self.x += self.v * dt
         if self.x < 0:
             self.x = 0
             self.v = -self.v * self.bounce_c
@@ -85,8 +45,8 @@ class Paddle:
             self.x = SCREEN_WIDTH - self.width
             self.v = -self.v * self.bounce_c
 
-    def draw(self):
-        graphics.set_pen(PEN_YELLOW)
+    def draw(self, graphics: PicoGraphics):
+        graphics.set_pen(PALETTE["YELLOW"])
         p_x = round(self.x)
         graphics.rectangle(p_x, self.y, self.width, 1)
 
@@ -97,7 +57,7 @@ class Brick:
         self.width = width
         self.pen = pen
 
-    def draw(self):
+    def draw(self, graphics: PicoGraphics):
         graphics.set_pen(self.pen)
         graphics.rectangle(self.x, self.y, self.width, 1)
 
@@ -115,9 +75,9 @@ class Ball:
         self.vx = randint(-2, 2)
         self.vy = -4
 
-    def update(self):
-        self.x += self.vx * DT
-        self.y += self.vy * DT
+    def update(self, dt):
+        self.x += self.vx * dt
+        self.y += self.vy * dt
 
         # out of bounds
         if self.x < 0:
@@ -137,7 +97,7 @@ class Ball:
         # hits paddle
         if check_collision(self, paddle):
             self.vy = -self.vy
-            self.y += self.vy * DT * 2
+            self.y += self.vy * dt * 2
 
         # hits bricks
         for b in bricks.copy():
@@ -145,10 +105,10 @@ class Ball:
                 print("hit")
                 bricks.remove(b)
                 self.vy = -self.vy
-                self.y += self.vy * DT * 2
+                self.y += self.vy * dt * 2
 
-    def draw(self):
-        graphics.set_pen(PEN_WHITE)
+    def draw(self, graphics: PicoGraphics):
+        graphics.set_pen(PALETTE["WHITE"])
         p_x = round(self.x)
         p_y = round(self.y)
         graphics.pixel(p_x, p_y)
@@ -166,46 +126,48 @@ def check_collision(pixel, line):
 # = game loop ===================================================================
 
 # init
-paddle = Paddle()
-ball = Ball()
-bricks = [
-    # row 1
-    Brick(0, 1, 4, PEN_GREEN),
-    Brick(4, 1, 4, PEN_DARK_GREEN),
-    Brick(8, 1, 4, PEN_GREEN),
-    Brick(12, 1, 4, PEN_DARK_GREEN),
-    # row 2
-    Brick(2, 2, 3, PEN_RED),
-    Brick(5, 2, 3, PEN_ORANGE),
-    Brick(8, 2, 3, PEN_RED),
-    Brick(11, 2, 3, PEN_ORANGE),
-    # row 3
-    Brick(0, 3, 4, PEN_BLUE),
-    Brick(4, 3, 4, PEN_DARK_PURPLE),
-    Brick(8, 3, 4, PEN_BLUE),
-    Brick(12, 3, 4, PEN_DARK_PURPLE),
-    # row 4
-    Brick(2, 4, 3, PEN_PINK),
-    Brick(5, 4, 3, PEN_BROWN),
-    Brick(8, 4, 3, PEN_PINK),
-    Brick(11, 4, 3, PEN_BROWN),
-]
-
-print("Game started")
+paddle: Paddle = None
+ball: Ball = None
+bricks: list[Brick] = None
 
 # loop
-while True:
-    # _update
-    paddle.update()
-    ball.update()
 
-    # _draw
-    graphics.set_pen(PEN_BLACK)
-    graphics.clear()
-    paddle.draw()
-    ball.draw()
+def init():
+    global paddle, ball, bricks
+    print("init")
+    print(PALETTE.keys())
+    print(PALETTE["GREEN"])
+    paddle = Paddle()
+    ball = Ball()
+    bricks = [
+        # row 1
+        Brick(0, 1, 4, PALETTE["GREEN"]),
+        Brick(4, 1, 4, PALETTE["DARK_GREEN"]),
+        Brick(8, 1, 4, PALETTE["GREEN"]),
+        Brick(12, 1, 4, PALETTE["DARK_GREEN"]),
+        # row 2
+        Brick(2, 2, 3, PALETTE["RED"]),
+        Brick(5, 2, 3, PALETTE["ORANGE"]),
+        Brick(8, 2, 3, PALETTE["RED"]),
+        Brick(11, 2, 3, PALETTE["ORANGE"]),
+        # row 3
+        Brick(0, 3, 4, PALETTE["BLUE"]),
+        Brick(4, 3, 4, PALETTE["DARK_PURPLE"]),
+        Brick(8, 3, 4, PALETTE["BLUE"]),
+        Brick(12, 3, 4, PALETTE["DARK_PURPLE"]),
+        # row 4
+        Brick(2, 4, 3, PALETTE["PINK"]),
+        Brick(5, 4, 3, PALETTE["BROWN"]),
+        Brick(8, 4, 3, PALETTE["PINK"]),
+        Brick(11, 4, 3, PALETTE["BROWN"]),
+    ]
+
+def update(msa: BreakoutMSA311, dt):
+    paddle.update(msa, dt)
+    ball.update(dt)
+
+def draw(graphics: PicoGraphics):
+    paddle.draw(graphics)
+    ball.draw(graphics)
     for brick in bricks:
-        brick.draw()
-    su.update(graphics)
-
-    time.sleep(DT)
+        brick.draw(graphics)
