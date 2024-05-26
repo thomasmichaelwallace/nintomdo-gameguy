@@ -20,5 +20,6 @@
         "Pimoroni",
         "tetris",
         "tetromino"
-    ]
+    ],
+    "python.languageServer": "Pylance"
 }

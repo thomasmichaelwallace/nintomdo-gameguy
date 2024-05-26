@@ -6,7 +6,7 @@ from breakout_msa311 import BreakoutMSA311
 
 # = setup ======================================================================
 
-print("debug string 456")
+print("DEBUG_1")
 
 PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
@@ -19,7 +19,7 @@ class Board:
         self.width = 10
         self.height = SCREEN_HEIGHT
         self.x0 = (SCREEN_WIDTH - self.width) // 2
-        self.grid = [[0 for x in range(self.width)] for y in range(self.height)]
+        self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
 
     def draw(self, graphics: PicoGraphics):
         # walls
@@ -41,16 +41,24 @@ class Tetromino:
         self.input_max = 0.6
         self.input_f = self.v_max / (self.input_max - self.input_min)
         # globals
-        self.vx = 0.2 # five moves per second
+        self.vx = 0.175 # five moves per second
         self.vy = 0.25
         self.tx = 0
         self.ty = 0
         # shape
         self.shape = []
-        self.pen = None
+        self.pen = PALETTE["WHITE"]
         self.x = 0
         self.y = 0
         self.init()
+        # jump detection
+        self.j_thresh = 1.9
+        self.j_last = False
+        self.j_request = False
+        self.j_cool = 1 # time to wait between jumps
+        self.j_v = 0
+        self.tj = 0
+        self.vj = 0.25
 
     def init(self):
         _, shape_info = random.choice(list(SHAPES.items()))
@@ -71,63 +79,91 @@ class Tetromino:
                     board.grid[self.y + j][self.x + i] = self.pen
         self.init()
 
+    def test_collision_x(self):
+        for j, row in enumerate(self.shape):
+            for i, cell in enumerate(row):
+                if cell:
+                    if self.x + i < 0:
+                        return True
+                    elif self.x + i >= board.width:
+                        return True
+                    elif self.y + j < 0:
+                        pass
+                    elif self.y + j >= board.height:
+                        pass
+                    elif board.grid[self.y + j][self.x + i]:
+                        return True
+        return False
+
+    def test_collision_y(self):
+        for j, row in enumerate(self.shape):
+            for i, cell in enumerate(row):
+                if cell:
+                    if self.y + j >= board.height:
+                        return True
+                    if self.y + j >= 0 and board.grid[self.y + j][self.x + i]:
+                        return True
+        return False
+
+
     def update(self, msa: BreakoutMSA311, dt):
+        # jump detection
+        spin = False
+        y = msa.get_y_axis()
+        if self.tj > 0 and y > self.j_thresh:
+            if not self.j_last:
+                self.j_request = True
+                self.j_v = y
+        else:
+            self.j_last = False
+        self.tj += dt
+        if self.tj > self.vj:
+            self.tj = 0
+            if self.j_request:
+                self.j_request = False
+                self.tj = self.vj - self.j_cool
+                print("spin!", self.j_v)
+                spin = True
+
+        if spin:
+            self.shape = list(zip(*self.shape[::-1]))
+            if self.test_collision_x():
+                self.shape = list(zip(*self.shape[::-1]))
+            if self.test_collision_y():
+                self.shape = list(zip(*self.shape[::-1]))
+
         # x-movement
         self.tx += dt
-        target_v = 0
+        input_x = 0
         if self.tx > self.vx:
             self.tx = 0
             input_x = -1 * msa.get_x_axis() # x axis is inverted
             clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
-            target_v = math.copysign(
+            input_x = math.copysign(
                 clamp_x, # clamp
                 input_x # re-sign
             )
-            if target_v < 0:
+            if input_x < 0:
                 self.x -= 1
-            elif target_v > 0:
+            elif input_x > 0:
                 self.x += 1
 
         # x collision
-        if target_v != 0:
-            for j, row in enumerate(self.shape):
-                for i, cell in enumerate(row):
-                    if cell:
-                        if self.x + i < 0:
-                            self.x += 1
-                        elif self.x + i >= board.width:
-                            self.x -= 1
-                        elif self.y + j < 0:
-                            pass
-                        elif self.y + j >= board.height:
-                            pass
-                        elif board.grid[self.y + j][self.x + i]:
-                            if target_v < 0:
-                                self.x += 1
-                            elif target_v > 0:
-                                self.x -= 1
+        if input_x != 0:
+            if self.test_collision_x():
+                if input_x < 0:
+                    self.x += 1
+                elif input_x > 0:
+                    self.x -= 1
 
-        # y-movement
+        # y-movement and collision
         self.ty += dt
-        target_v = 0
         if self.ty > self.vy:
             self.ty = 0
             self.y += 1
-            target_v = 1
-
-        # y collision
-        if target_v != 0:
-            for j, row in enumerate(self.shape):
-                for i, cell in enumerate(row):
-                    if cell:
-                        if self.y + j >= board.height:
-                            self.y -= 1
-                            self.freeze()
-                            return
-                        if self.y + j >= 0 and board.grid[self.y + j][self.x + i]:
-                            self.y -= 1
-                            self.freeze()
-                            return
+            if self.test_collision_y():
+                self.y -= 1
+                self.freeze()
 
     def draw(self, graphics: PicoGraphics):
         for j, row in enumerate(self.shape):
