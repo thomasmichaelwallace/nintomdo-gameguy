@@ -4,9 +4,14 @@ from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
 from pimoroni_i2c import PimoroniI2C
 from breakout_msa311 import BreakoutMSA311
 
+# global options
+
+DEBUG_MODE=2
+print("DEBUG_MODE:", DEBUG_MODE)
+
 # global hardware references
 stellar = StellarUnicorn()
-graphics = PicoGraphics(DISPLAY)    
+graphics = PicoGraphics(DISPLAY)
 
 # setup msa311 (accelerometer) breakout board
 PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
@@ -39,9 +44,14 @@ PALETTE = {
     "INDIGO": hex_to_pen(graphics, "#83769c"),
     "PINK": hex_to_pen(graphics, "#ff77a8"),
     "PEACH": hex_to_pen(graphics, "#ffccaa"),
+    # tetris:
+    "CYAN": hex_to_pen(graphics, "#00b5e2"),
+    "PURPLE": hex_to_pen(graphics, "#b86f50"),
 }
 
-brightness = 0.5
+brightness = 1
+if DEBUG_MODE > 0:
+    brightness = 0.5
 
 stellar.set_brightness(brightness)
 
@@ -60,8 +70,10 @@ graphics.pixel(0, 9)
 stellar.update(graphics)
 
 while True:
-    if stellar.is_pressed(StellarUnicorn.SWITCH_A):
-        import breakout as game
+    if DEBUG_MODE == 1 or stellar.is_pressed(StellarUnicorn.SWITCH_A):
+        from src import breakout as game
+    if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
+        from src import tetris as game
 
     if game:
         game.PALETTE = PALETTE
