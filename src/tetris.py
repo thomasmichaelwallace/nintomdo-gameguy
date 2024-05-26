@@ -22,10 +22,12 @@ class Board:
         self.grid = []
         self.lus = 0.5 # rate that lines are cleared
         self.tlus = 0
+        self.v = 0
         self.init()
 
     def init(self):
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
+        self.v = 0.25
 
     def update(self, dt):
         self.tlus += dt
@@ -36,6 +38,7 @@ class Board:
                     print("line cleared!", j)
                     self.grid.pop(j)
                     self.grid.insert(0, [0 for _ in range(self.width)])
+                    self.v += 0.1
 
     def draw(self, graphics: PicoGraphics):
         # walls
@@ -93,6 +96,9 @@ class Tetromino:
             for i, cell in enumerate(row):
                 if cell:
                     board.grid[self.y + j][self.x + i] = self.pen
+        if (self.y < 0):
+            print("game over")
+            board.init()
         self.init()
 
     def test_collision_x(self):
