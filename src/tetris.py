@@ -19,7 +19,23 @@ class Board:
         self.width = 10
         self.height = SCREEN_HEIGHT
         self.x0 = (SCREEN_WIDTH - self.width) // 2
+        self.grid = []
+        self.lus = 0.5 # rate that lines are cleared
+        self.tlus = 0
+        self.init()
+
+    def init(self):
         self.grid = [[0 for _ in range(self.width)] for _ in range(self.height)]
+
+    def update(self, dt):
+        self.tlus += dt
+        if self.tlus > self.lus:
+            self.tlus = 0
+            for j, row in enumerate(self.grid):
+                if all(row):
+                    print("line cleared!", j)
+                    self.grid.pop(j)
+                    self.grid.insert(0, [0 for _ in range(self.width)])
 
     def draw(self, graphics: PicoGraphics):
         # walls
@@ -249,6 +265,7 @@ def init():
     tetromino = Tetromino()
 
 def update(msa: BreakoutMSA311, dt):
+    board.update(dt)
     tetromino.update(msa, dt)
 
 def draw(graphics: PicoGraphics):
