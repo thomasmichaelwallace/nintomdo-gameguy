@@ -49,15 +49,15 @@ PALETTE = {
     "PURPLE": hex_to_pen(graphics, "#b86f50"),
 }
 
-brightness = 1
+BRIGHTNESS = 1
 if DEBUG_MODE > 0:
-    brightness = 0.5
+    BRIGHTNESS = 0.5
 
-stellar.set_brightness(brightness)
+stellar.set_brightness(BRIGHTNESS)
 
 # title screen
 
-game = None
+GAME = None
 
 graphics.set_pen(graphics.create_pen(255, 0, 0))
 graphics.pixel(0, 3)
@@ -70,14 +70,15 @@ graphics.pixel(0, 9)
 stellar.update(graphics)
 
 while True:
+    # note that import is relative to main.py in root
     if DEBUG_MODE == 1 or stellar.is_pressed(StellarUnicorn.SWITCH_A):
-        from src import breakout as game
+        from src import breakout as GAME # pylint: disable=import-error
     if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
-        from src import tetris as game
+        from src import tetris as GAME # pylint: disable=import-error
 
-    if game:
-        game.PALETTE = PALETTE
-        game.init()
+    if GAME:
+        GAME.PALETTE = PALETTE
+        GAME.init()
         break
 
     time.sleep_ms(DT_MS)
@@ -87,18 +88,18 @@ while True:
 while True:
     # board
     if stellar.is_pressed(StellarUnicorn.SWITCH_BRIGHTNESS_UP):
-        brightness = min(brightness + 0.01, 1.0)
-        stellar.set_brightness(brightness)
+        BRIGHTNESS = min(BRIGHTNESS + 0.01, 1.0)
+        stellar.set_brightness(BRIGHTNESS)
     if stellar.is_pressed(StellarUnicorn.SWITCH_BRIGHTNESS_DOWN):
-        brightness = max(brightness - 0.01, 0.0)
-        stellar.set_brightness(brightness)
+        BRIGHTNESS = max(BRIGHTNESS - 0.01, 0.0)
+        stellar.set_brightness(BRIGHTNESS)
 
     # game
-    game.update(msa, DT_MS / 1000)
+    GAME.update(msa, DT_MS / 1000)
 
     graphics.set_pen(PALETTE["BLACK"])
     graphics.clear()
-    game.draw(graphics)
+    GAME.draw(graphics)
 
     stellar.update(graphics)
 

@@ -1,3 +1,6 @@
+[MATER]
+ignore=typings/
+
 [MAIN]
 init-hook='import sys;sys.path[1:1]=["typings/",  ]'
 

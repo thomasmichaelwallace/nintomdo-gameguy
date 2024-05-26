@@ -12,7 +12,7 @@ SCREEN_HEIGHT = StellarUnicorn.HEIGHT
 
 # = entities ===================================================================
 
-class Paddle:
+class Paddle: # pylint: disable=too-many-instance-attributes
     def __init__(self):
         # layout
         self.width = 5
@@ -50,7 +50,7 @@ class Paddle:
         p_x = round(self.x)
         graphics.rectangle(p_x, self.y, self.width, 1)
 
-class Brick:
+class Brick: # pylint: disable=too-few-public-methods
     def __init__(self, x, y, width, pen):
         self.x = x
         self.y = y
@@ -118,7 +118,7 @@ def check_collision(pixel, line):
     l_y = round(line.y)
     l_x0 = round(line.x)
     l_x1 = round(line.x + line.width)
-    if (p_x >= l_x0 and p_x < l_x1) and (p_y == l_y):
+    if l_x0 <= p_x < l_x1 and p_y == l_y:
         return True
     return False
 
@@ -132,7 +132,7 @@ bricks: list[Brick]
 # loop
 
 def init():
-    global paddle, ball, bricks
+    global paddle, ball, bricks # pylint: disable=global-statement
     paddle = Paddle()
     ball = Ball()
     bricks = [
