@@ -3,13 +3,22 @@
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none"
     },
-    "micropico.syncFolder": "",
     "micropico.openOnStart": true,
+    "micropico.softResetAfterUpload": true,
+    "micropico.statusbarButtons": [
+        "status",
+        "run",
+        "softreset",
+        "togglepicowfs",
+        "uploadproject",
+    ],
     "python.analysis.typeshedPaths": [
         "typings"
     ],
     "cSpell.words": [
         "picographics",
-        "Pimoroni"
+        "Pimoroni",
+        "tetris",
+        "tetromino"
     ]
 }
