@@ -6,9 +6,13 @@ from breakout_msa311 import BreakoutMSA311
 
 # = setup ======================================================================
 
+print("debug string 456")
+
 PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
 SCREEN_HEIGHT = StellarUnicorn.HEIGHT
+
+# = entities ===================================================================
 
 class Board:
     def __init__(self):
@@ -31,6 +35,21 @@ class Board:
 
 class Tetromino:
     def __init__(self):
+        # constants
+        self.v_max = SCREEN_WIDTH * 2.5
+        self.input_min = 0.075
+        self.input_max = 0.6
+        self.input_f = self.v_max / (self.input_max - self.input_min)
+        # globals
+        self.vx = 0.2 # five moves per second
+        self.vy = 0.25
+        self.tx = 0
+        self.ty = 0
+        # shape
+        self.shape = []
+        self.pen = None
+        self.x = 0
+        self.y = 0
         self.init()
 
     def init(self):
@@ -44,8 +63,6 @@ class Tetromino:
             if any(row):
                 self.y += 1
                 break
-        self.t = 0
-        self.v = 0.25
 
     def freeze(self):
         for j, row in enumerate(self.shape):
@@ -54,24 +71,63 @@ class Tetromino:
                     board.grid[self.y + j][self.x + i] = self.pen
         self.init()
 
-
     def update(self, msa: BreakoutMSA311, dt):
-        self.t += dt
-        if self.t > self.v:
-            self.t = 0
+        # x-movement
+        self.tx += dt
+        target_v = 0
+        if self.tx > self.vx:
+            self.tx = 0
+            input_x = -1 * msa.get_x_axis() # x axis is inverted
+            clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
+            target_v = math.copysign(
+                clamp_x, # clamp
+                input_x # re-sign
+            )
+            if target_v < 0:
+                self.x -= 1
+            elif target_v > 0:
+                self.x += 1
+
+        # x collision
+        if target_v != 0:
+            for j, row in enumerate(self.shape):
+                for i, cell in enumerate(row):
+                    if cell:
+                        if self.x + i < 0:
+                            self.x += 1
+                        elif self.x + i >= board.width:
+                            self.x -= 1
+                        elif self.y + j < 0:
+                            pass
+                        elif self.y + j >= board.height:
+                            pass
+                        elif board.grid[self.y + j][self.x + i]:
+                            if target_v < 0:
+                                self.x += 1
+                            elif target_v > 0:
+                                self.x -= 1
+
+        # y-movement
+        self.ty += dt
+        target_v = 0
+        if self.ty > self.vy:
+            self.ty = 0
             self.y += 1
+            target_v = 1
+
         # y collision
-        for j, row in enumerate(self.shape):
-            for i, cell in enumerate(row):
-                if cell:
-                    if self.y + j >= board.height:
-                        self.y -= 1
-                        self.freeze()
-                        return
-                    if self.y + j >= 0 and board.grid[self.y + j][self.x + i]:
-                        self.y -= 1
-                        self.freeze()
-                        return
+        if target_v != 0:
+            for j, row in enumerate(self.shape):
+                for i, cell in enumerate(row):
+                    if cell:
+                        if self.y + j >= board.height:
+                            self.y -= 1
+                            self.freeze()
+                            return
+                        if self.y + j >= 0 and board.grid[self.y + j][self.x + i]:
+                            self.y -= 1
+                            self.freeze()
+                            return
 
     def draw(self, graphics: PicoGraphics):
         for j, row in enumerate(self.shape):
@@ -81,6 +137,8 @@ class Tetromino:
                     dy = self.y + j
                     graphics.set_pen(self.pen)
                     graphics.pixel(dx, dy)
+
+# = resources ==================================================================
 
 SHAPES = {
     "I": {
@@ -141,8 +199,13 @@ SHAPES = {
     }
 }
 
+# = game loop ===================================================================
+
+# init
 board: Board
 tetromino: Tetromino
+
+# loop
 
 def init():
     global board, tetromino
