@@ -125,9 +125,9 @@ def check_collision(pixel, line):
 # = game loop ===================================================================
 
 # init
-paddle: Paddle = None
-ball: Ball = None
-bricks: list[Brick] = None
+paddle: Paddle
+ball: Ball
+bricks: list[Brick]
 
 # loop
 
