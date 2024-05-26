@@ -102,7 +102,6 @@ class Ball:
         # hits bricks
         for b in bricks.copy():
             if check_collision(self, b):
-                print("hit")
                 bricks.remove(b)
                 self.vy = -self.vy
                 self.y += self.vy * dt * 2
@@ -134,9 +133,6 @@ bricks: list[Brick] = None
 
 def init():
     global paddle, ball, bricks
-    print("init")
-    print(PALETTE.keys())
-    print(PALETTE["GREEN"])
     paddle = Paddle()
     ball = Ball()
     bricks = [
