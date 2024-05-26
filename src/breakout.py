@@ -6,6 +6,8 @@ from breakout_msa311 import BreakoutMSA311
 
 # = setup ======================================================================
 
+print("DEBUG_7")
+
 PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
 SCREEN_HEIGHT = StellarUnicorn.HEIGHT
@@ -82,13 +84,13 @@ class Ball:
         # out of bounds
         if self.x < 0:
             self.x = 0
-            self.vx = -self.vx
+            self.vx, self.vy = reflect_vector([self.vx, self.vy], [1, 0])
         if self.x > SCREEN_WIDTH - 1:
             self.x = SCREEN_WIDTH - 1
-            self.vx = -self.vx
+            self.vx, self.vy =  reflect_vector([self.vx, self.vy], [-1, 0])
         if self.y < 0:
             self.y = 0
-            self.vy = -self.vy
+            self.vx, self.vy = reflect_vector([self.vx, self.vy], [0, -1])
 
         # game over
         if self.y > SCREEN_HEIGHT + 1:
@@ -96,15 +98,24 @@ class Ball:
 
         # hits paddle
         if check_collision(self, paddle):
-            self.vy = -self.vy
-            self.y += self.vy * dt * 2
+            self.y = paddle.y - 1
+            # get position on paddle
+            offset = self.x - paddle.x
+            if offset < 1:
+                self.vx, self.vy = reflect_vector([self.vx, self.vy], [0.196, 0.981])
+                print("very left")
+            elif offset > 4:
+                self.vx, self.vy = reflect_vector([self.vx, self.vy], [-0.196, 0.981])
+                print("very right")
+            else:
+                self.vx, self.vy = reflect_vector([self.vx, self.vy], [0, 1])
+                print("center")
 
         # hits bricks
         for b in bricks.copy():
             if check_collision(self, b):
                 bricks.remove(b)
                 self.vy = -self.vy
-                self.y += self.vy * dt * 2
 
     def draw(self, graphics: PicoGraphics):
         graphics.set_pen(PALETTE["WHITE"])
@@ -121,6 +132,21 @@ def check_collision(pixel, line):
     if l_x0 <= p_x < l_x1 and p_y == l_y:
         return True
     return False
+
+def dot_product(V, N):
+    return sum(v*n for v, n in zip(V, N))
+
+def magnitude(N):
+    return sum(n**2 for n in N)**0.5
+
+def reflect_vector(V, N):
+    # Normalize the normal vector
+    N = [n / magnitude(N) for n in N]
+
+    # Calculate the reflected vector
+    R = [v - 2 * dot_product(V, N) * n for v, n in zip(V, N)]
+
+    return R
 
 # = game loop ===================================================================
 
