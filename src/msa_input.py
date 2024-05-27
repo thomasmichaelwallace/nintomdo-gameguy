@@ -24,7 +24,7 @@ def debug_print(*args):
 def msa_input_init():
     global INPUT_ZERO # pylint: disable=global-statement
     print("staring calibration [hold]")
-    readings = []
+    readings = [0.0]
     time.sleep_ms(1000) # wait for sensor to settle
     print("calibrating...")
     for _ in range(100):
@@ -45,7 +45,7 @@ def get_tilt_float() -> float:
         return 0 # ensure dead zone is exactly zero
     clamp_norm_x = min(unsigned_x, INPUT_MAX_ZONE) / INPUT_MAX_ZONE
     float_x = -math.copysign(clamp_norm_x, input_x) # x is inverted
-    debug_print("input_x", input_x, "float_x", float_x)
+    debug_print("raw_x", raw_x, "float_x", float_x)
     return float_x
 
 LAST_TILT_BUTTON = 0

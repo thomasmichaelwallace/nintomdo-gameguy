@@ -28,15 +28,11 @@ class Snake:
             self.t = 0
 
             # turn
-            input_x = msa_input.get_tilt_float()
+            input_x = msa_input.get_tilt_as_button()
             if input_x < 0:
-                print("turn left", input_x)
                 self.dir -= 1
             elif input_x > 0:
-                print("turn right", input_x)
                 self.dir += 1
-            else:
-                print("no turn")
             self.dir = abs(self.dir % 4)
 
             # move
@@ -87,9 +83,10 @@ class Apple:
 
     def init(self):
         while True:
-            self.x = random.randint(0, screen.WIDTH)
-            self.y = random.randint(0, screen.HEIGHT)
+            self.x = random.randint(0, screen.WIDTH - 1)
+            self.y = random.randint(0, screen.HEIGHT - 1)
             if not snake.is_grid_taken(self.x, self.y):
+                print("apple at", self.x, self.y)
                 break
 
     def draw(self, graphics: PicoGraphics):
