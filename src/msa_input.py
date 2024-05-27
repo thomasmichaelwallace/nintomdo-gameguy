@@ -3,7 +3,7 @@ import time
 from pimoroni_i2c import PimoroniI2C
 from breakout_msa311 import BreakoutMSA311
 
-print("DEBUG_MSA_017")
+print("DEBUG_MSA_019")
 
 PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
 i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
@@ -49,20 +49,77 @@ def get_tilt_float() -> float:
     return float_x
 
 LAST_TILT_BUTTON = 0
+LAST_TILT_DEBOUNCE = 0
 
-def get_tilt_as_button() -> int:
-    global LAST_TILT_BUTTON # pylint: disable=global-statement
+LAST_TILT_TICKING_BUTTON = 0
+LAST_TILT_TICKING_DEBOUNCE = 0
+TICKING_BUTTON_TIMER = 0
+FASTEST_TICK = 0.20
+SLOWEST_TICK = 0.75
+
+DEBOUNCE_INTERVAL = FASTEST_TICK
+
+# returns (has changed, value, debounce_time)
+def _get_debounced_button(input_x, last, t):
+    if input_x < 0:
+        next_button = -1
+    elif input_x > 0:
+        next_button = 1
+    else:
+        next_button = 0
+
+    if next_button == last:
+        # no change
+        return (False, 0, DEBOUNCE_INTERVAL)
+
+    if last in (0, -next_button):
+        # moving out from zero or very quickly from left/right
+        # reset debounce
+        debug_print("button press", next_button)
+        return (True, next_button, DEBOUNCE_INTERVAL)
+
+    # moving back to zero requires debounce
+    if t <= 0:
+        debug_print("button zero", next_button)
+        return (True, 0, DEBOUNCE_INTERVAL)
+
+    debug_print("debounce", t)
+    return (False, 0, t)
+
+def get_tilt_as_button(dt) -> int:
+    global LAST_TILT_BUTTON, LAST_TILT_DEBOUNCE # pylint: disable=global-statement
     input_x = get_tilt_float()
-    if input_x < 0 and LAST_TILT_BUTTON != -1:
-        LAST_TILT_BUTTON = -1
-        return -1
-    if input_x > 0 and LAST_TILT_BUTTON != 1:
-        LAST_TILT_BUTTON = 1
-        return 1
-    if input_x == 0:
-        LAST_TILT_BUTTON = 0
-    return 0
+    LAST_TILT_DEBOUNCE -= dt
+    update, value, debounce_timer = _get_debounced_button(
+        input_x, LAST_TILT_BUTTON, LAST_TILT_DEBOUNCE
+    )
+    LAST_TILT_DEBOUNCE = debounce_timer
+    if update:
+        LAST_TILT_BUTTON = value
+    return value
 
+
+def get_tilt_as_ticking_button(dt) -> int:
+    global LAST_TILT_TICKING_BUTTON, LAST_TILT_TICKING_DEBOUNCE, TICKING_BUTTON_TIMER # pylint: disable=global-statement
+    input_x = get_tilt_float()
+    LAST_TILT_TICKING_DEBOUNCE -= dt
+    update, value, debounce_timer = _get_debounced_button(
+        input_x, LAST_TILT_TICKING_BUTTON, LAST_TILT_TICKING_DEBOUNCE
+    )
+    LAST_TILT_TICKING_DEBOUNCE = debounce_timer
+
+    if LAST_TILT_TICKING_BUTTON != 0:
+        TICKING_BUTTON_TIMER += dt
+        tick_threshold = SLOWEST_TICK - (SLOWEST_TICK - FASTEST_TICK) * abs(input_x)
+        if TICKING_BUTTON_TIMER > tick_threshold:
+            debug_print("resetting button")
+            LAST_TILT_TICKING_BUTTON = 0
+            TICKING_BUTTON_TIMER = 0
+
+    if update:
+        LAST_TILT_TICKING_BUTTON = value
+        TICKING_BUTTON_TIMER = 0
+    return value
 
 JUMP_VELOCITY = 0
 JUMP_COOLDOWN_INTERVAL = 0.3
