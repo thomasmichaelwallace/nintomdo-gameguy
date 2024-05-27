@@ -15,11 +15,12 @@ graphics = PicoGraphics(DISPLAY)
 
 # global setup
 screen.screen_init(graphics)
-
 BRIGHTNESS = 1
 if DEBUG_MODE > 0:
     BRIGHTNESS = 0.3 # do not blind myself while working with the board directly
 stellar.set_brightness(BRIGHTNESS)
+
+msa_input.msa_input_init()
 
 # timer
 FPS = 30
