@@ -1,12 +1,11 @@
-import math
 from random import randint
 from stellar import StellarUnicorn
 from picographics import PicoGraphics
-from breakout_msa311 import BreakoutMSA311
+import msa_input
 
 # = setup ======================================================================
 
-print("DEBUG_7")
+print("DEBUG_8")
 
 PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
@@ -27,17 +26,10 @@ class Paddle: # pylint: disable=too-many-instance-attributes
         self.a = 2
         self.bounce_c = 0.8
         # input
-        self.input_min = 0.075
-        self.input_max = 0.6
-        self.input_f = self.v_max / (self.input_max - self.input_min)
+        self.input_f = self.v_max
 
-    def update(self, msa: BreakoutMSA311, dt):
-        input_x = -1 * msa.get_x_axis() # x axis is inverted
-        clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
-        target_v = self.input_f * math.copysign(
-            clamp_x, # clamp
-            input_x # re-sign
-        )
+    def update(self, dt):
+        target_v = self.input_f * msa_input.get_tilt_float()
         self.v = self.v + (target_v - self.v) * self.a * dt
         self.x += self.v * dt
         if self.x < 0:
@@ -133,20 +125,16 @@ def check_collision(pixel, line):
         return True
     return False
 
-def dot_product(V, N):
-    return sum(v*n for v, n in zip(V, N))
+def dot_product(vm, nm):
+    return sum(v*n for v, n in zip(vm, nm))
 
-def magnitude(N):
-    return sum(n**2 for n in N)**0.5
+def magnitude(nm):
+    return sum(n**2 for n in nm)**0.5
 
-def reflect_vector(V, N):
-    # Normalize the normal vector
-    N = [n / magnitude(N) for n in N]
-
-    # Calculate the reflected vector
-    R = [v - 2 * dot_product(V, N) * n for v, n in zip(V, N)]
-
-    return R
+def reflect_vector(vm, nm):
+    nm = [n / magnitude(nm) for n in nm]
+    rm = [v - 2 * dot_product(vm, nm) * n for v, n in zip(vm, nm)]
+    return rm
 
 # = game loop ===================================================================
 
@@ -184,8 +172,8 @@ def init():
         Brick(11, 4, 3, PALETTE["BROWN"]),
     ]
 
-def update(msa: BreakoutMSA311, dt):
-    paddle.update(msa, dt)
+def update(dt):
+    paddle.update(dt)
     ball.update(dt)
 
 def draw(graphics: PicoGraphics):

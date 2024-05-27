@@ -1,12 +1,11 @@
-import math
 import random
 from stellar import StellarUnicorn
 from picographics import PicoGraphics
-from breakout_msa311 import BreakoutMSA311
+import msa_input
 
 # = setup ======================================================================
 
-print("DEBUG_6")
+print("DEBUG_7")
 
 PALETTE = {}
 SCREEN_WIDTH = StellarUnicorn.WIDTH
@@ -72,14 +71,6 @@ class Board: # pylint: disable=too-many-instance-attributes
 class Block: # pylint: disable=too-many-instance-attributes
     def __init__(self):
         # constants
-        self.jump_g_threshold = 1.9
-        self.jump_requested = False
-        self.jump_cooldown_interval = 1 # time to wait between jumps
-        self.tj = 0
-        self.jump_check_interval = 0.25
-        self.jump_velocity = 0
-        self.input_min = 0.075
-        self.input_max = 0.6
         self.tx = 0
         self.move_x_check_interval = 0.25 # five moves per second
         self.ty = 0
@@ -144,25 +135,9 @@ class Block: # pylint: disable=too-many-instance-attributes
         self.y = yo
         return False
 
-    def jump_detected(self, msa, dt) -> bool:
-        y = msa.get_y_axis()
-        self.tj += dt
-        if self.tj > 0 and y > self.jump_g_threshold:
-            self.jump_requested = True
-            self.jump_velocity = max(self.jump_requested, y)
-        if self.tj > self.jump_check_interval:
-            self.tj = 0
-            if self.jump_requested:
-                self.jump_requested = False
-                self.jump_velocity = 0
-                self.tj = self.jump_check_interval - self.jump_cooldown_interval
-                print("jump!", self.jump_velocity)
-                return True
-        return False
-
-    def update(self, msa: BreakoutMSA311, dt):
+    def update(self, dt):
         # rotate
-        if self.jump_detected(msa, dt):
+        if msa_input.get_jump():
             if self.try_rotate_with_kick():
                 pass
             else:
@@ -173,12 +148,7 @@ class Block: # pylint: disable=too-many-instance-attributes
         input_x = 0
         if self.tx > self.move_x_check_interval:
             self.tx = 0
-            input_x = -1 * msa.get_x_axis() # x axis is inverted
-            clamp_x = max(min(abs(input_x), self.input_max), self.input_min) - self.input_min
-            input_x = math.copysign(
-                clamp_x, # clamp
-                input_x # re-sign
-            )
+            input_x = msa_input.get_tilt_float()
             if input_x < 0:
                 self.x -= 1
             elif input_x > 0:
@@ -297,9 +267,9 @@ def init():
     board = Board()
     tetromino = Block()
 
-def update(msa: BreakoutMSA311, dt):
+def update(dt):
     board.update(dt)
-    tetromino.update(msa, dt)
+    tetromino.update(dt)
 
 def draw(graphics: PicoGraphics):
     board.draw(graphics)

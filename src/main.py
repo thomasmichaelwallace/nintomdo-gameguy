@@ -1,22 +1,16 @@
 import time
 from stellar import StellarUnicorn
 from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
-from pimoroni_i2c import PimoroniI2C
-from breakout_msa311 import BreakoutMSA311
+import msa_input
 
 # global options
 
-DEBUG_MODE=1
+DEBUG_MODE=-1
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
 stellar = StellarUnicorn()
 graphics = PicoGraphics(DISPLAY)
-
-# setup msa311 (accelerometer) breakout board
-PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
-i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
-msa = BreakoutMSA311(i2c)
 
 FPS = 30
 DT_MS = round(1000/FPS)
@@ -50,8 +44,8 @@ PALETTE = {
 }
 
 BRIGHTNESS = 1
-if DEBUG_MODE > 0:
-    BRIGHTNESS = 0.5
+if DEBUG_MODE != 0:
+    BRIGHTNESS = 0.3 # do not blind myself while working with the board directly
 
 stellar.set_brightness(BRIGHTNESS)
 
@@ -95,7 +89,8 @@ while True:
         stellar.set_brightness(BRIGHTNESS)
 
     # game
-    GAME.update(msa, DT_MS / 1000)
+    msa_input.update(DT_MS / 1000)
+    GAME.update(DT_MS / 1000)
 
     graphics.set_pen(PALETTE["BLACK"])
     graphics.clear()
