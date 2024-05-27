@@ -1,15 +1,9 @@
 import random
-from stellar import StellarUnicorn
 from picographics import PicoGraphics
 import msa_input
-
-# = setup ======================================================================
+import screen
 
 print("DEBUG_7")
-
-PALETTE = {}
-SCREEN_WIDTH = StellarUnicorn.WIDTH
-SCREEN_HEIGHT = StellarUnicorn.HEIGHT
 
 # = entities ===================================================================
 
@@ -17,8 +11,8 @@ class Board: # pylint: disable=too-many-instance-attributes
     def __init__(self):
         # constants
         self.width = 10
-        self.height = SCREEN_HEIGHT
-        self.left = (SCREEN_WIDTH - self.width) // 2
+        self.height = screen.HEIGHT
+        self.left = (screen.WIDTH - self.width) // 2
         self.initial_fall_speed = 0.6
         self.next_level_speed_factor = 1- 0.2 # increase speed by 20%
         self.t = 0
@@ -58,7 +52,7 @@ class Board: # pylint: disable=too-many-instance-attributes
 
     def draw(self, graphics: PicoGraphics):
         # walls
-        graphics.set_pen(PALETTE["WHITE"])
+        graphics.set_pen(screen.PALETTE.white)
         graphics.line(self.left - 1, 0, self.left - 1, self.height)
         graphics.line(self.left + self.width, 0, self.left + self.width, self.height)
         # blocks
@@ -80,14 +74,14 @@ class Block: # pylint: disable=too-many-instance-attributes
         self.rotation = 0
         self.shape = []
         self.shape_name = "I"
-        self.pen = PALETTE["WHITE"]
+        self.pen = screen.PALETTE.white
         self.init()
 
     def init(self):
         name, shape_info = random.choice(list(SHAPES.items()))
         self.shape_name = name
         self.shape = shape_info["shape"]
-        self.pen = PALETTE[shape_info["pen"]]
+        self.pen = getattr(screen.PALETTE, shape_info["pen"])
         # start with shape in origin rotation with base line just above board
         self.rotation = 0
         self.x = board.width // 2 - len(self.shape[0]) // 2
@@ -203,7 +197,7 @@ SHAPES = {
             [0, 0, 0, 0],
             [0, 0, 0, 0],
         ],
-        "pen": "CYAN"
+        "pen": "cyan"
     },
     "J": {
         "shape": [
@@ -211,7 +205,7 @@ SHAPES = {
             [1, 1, 1],
             [0, 0, 0],
         ],
-        "pen": "BLUE"
+        "pen": "blue"
     },
     "L": {
         "shape": [
@@ -219,14 +213,14 @@ SHAPES = {
             [1, 1, 1],
             [0, 0, 0],
         ],
-        "pen": "ORANGE"
+        "pen": "orange"
     },
     "O": {
         "shape": [
             [1, 1],
             [1, 1],
         ],
-        "pen": "YELLOW"
+        "pen": "yellow"
     },
     "S": {
         "shape": [
@@ -234,7 +228,7 @@ SHAPES = {
             [1, 1, 0],
             [0, 0, 0],
         ],
-        "pen": "GREEN"
+        "pen": "green"
     },
     "T": {
         "shape": [
@@ -242,7 +236,7 @@ SHAPES = {
             [1, 1, 1],
             [0, 0, 0],
         ],
-        "pen": "PURPLE"
+        "pen": "purple"
     },
     "Z": {
         "shape": [
@@ -250,7 +244,7 @@ SHAPES = {
             [0, 1, 1],
             [0, 0, 0],
         ],
-        "pen": "RED"
+        "pen": "red"
     }
 }
 

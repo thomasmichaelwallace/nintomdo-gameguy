@@ -1,15 +1,9 @@
 from random import randint
-from stellar import StellarUnicorn
 from picographics import PicoGraphics
 import msa_input
+import screen
 
-# = setup ======================================================================
-
-print("DEBUG_8")
-
-PALETTE = {}
-SCREEN_WIDTH = StellarUnicorn.WIDTH
-SCREEN_HEIGHT = StellarUnicorn.HEIGHT
+print("DEBUG_9")
 
 # = entities ===================================================================
 
@@ -18,11 +12,11 @@ class Paddle: # pylint: disable=too-many-instance-attributes
         # layout
         self.width = 5
         # position
-        self.y = SCREEN_HEIGHT - 2
-        self.x = (SCREEN_WIDTH - self.width) // 2
+        self.y = screen.HEIGHT - 2
+        self.x = (screen.WIDTH - self.width) // 2
         # physics
         self.v = 0
-        self.v_max = SCREEN_WIDTH * 2.5
+        self.v_max = screen.WIDTH * 2.5
         self.a = 2
         self.bounce_c = 0.8
         # input
@@ -35,12 +29,12 @@ class Paddle: # pylint: disable=too-many-instance-attributes
         if self.x < 0:
             self.x = 0
             self.v = -self.v * self.bounce_c
-        if self.x > SCREEN_WIDTH - self.width:
-            self.x = SCREEN_WIDTH - self.width
+        if self.x > screen.WIDTH - self.width:
+            self.x = screen.WIDTH - self.width
             self.v = -self.v * self.bounce_c
 
     def draw(self, graphics: PicoGraphics):
-        graphics.set_pen(PALETTE["YELLOW"])
+        graphics.set_pen(screen.PALETTE.yellow)
         p_x = round(self.x)
         graphics.rectangle(p_x, self.y, self.width, 1)
 
@@ -77,15 +71,15 @@ class Ball:
         if self.x < 0:
             self.x = 0
             self.vx, self.vy = reflect_vector([self.vx, self.vy], [1, 0])
-        if self.x > SCREEN_WIDTH - 1:
-            self.x = SCREEN_WIDTH - 1
+        if self.x > screen.WIDTH - 1:
+            self.x = screen.WIDTH - 1
             self.vx, self.vy =  reflect_vector([self.vx, self.vy], [-1, 0])
         if self.y < 0:
             self.y = 0
             self.vx, self.vy = reflect_vector([self.vx, self.vy], [0, -1])
 
         # game over
-        if self.y > SCREEN_HEIGHT + 1:
+        if self.y > screen.HEIGHT + 1:
             self.init()
 
         # hits paddle
@@ -110,7 +104,7 @@ class Ball:
                 self.vy = -self.vy
 
     def draw(self, graphics: PicoGraphics):
-        graphics.set_pen(PALETTE["WHITE"])
+        graphics.set_pen(screen.PALETTE.white)
         p_x = round(self.x)
         p_y = round(self.y)
         graphics.pixel(p_x, p_y)
@@ -151,25 +145,25 @@ def init():
     ball = Ball()
     bricks = [
         # row 1
-        Brick(0, 1, 4, PALETTE["GREEN"]),
-        Brick(4, 1, 4, PALETTE["DARK_GREEN"]),
-        Brick(8, 1, 4, PALETTE["GREEN"]),
-        Brick(12, 1, 4, PALETTE["DARK_GREEN"]),
+        Brick(0, 1, 4, screen.PALETTE.green),
+        Brick(4, 1, 4, screen.PALETTE.red),
+        Brick(8, 1, 4, screen.PALETTE.green),
+        Brick(12, 1, 4, screen.PALETTE.red),
         # row 2
-        Brick(2, 2, 3, PALETTE["RED"]),
-        Brick(5, 2, 3, PALETTE["ORANGE"]),
-        Brick(8, 2, 3, PALETTE["RED"]),
-        Brick(11, 2, 3, PALETTE["ORANGE"]),
+        Brick(2, 2, 3, screen.PALETTE.orange),
+        Brick(5, 2, 3, screen.PALETTE.azure),
+        Brick(8, 2, 3, screen.PALETTE.orange),
+        Brick(11, 2, 3, screen.PALETTE.azure),
         # row 3
-        Brick(0, 3, 4, PALETTE["BLUE"]),
-        Brick(4, 3, 4, PALETTE["DARK_PURPLE"]),
-        Brick(8, 3, 4, PALETTE["BLUE"]),
-        Brick(12, 3, 4, PALETTE["DARK_PURPLE"]),
+        Brick(0, 3, 4, screen.PALETTE.indigo),
+        Brick(4, 3, 4, screen.PALETTE.yellow),
+        Brick(8, 3, 4, screen.PALETTE.indigo),
+        Brick(12, 3, 4, screen.PALETTE.yellow),
         # row 4
-        Brick(2, 4, 3, PALETTE["PINK"]),
-        Brick(5, 4, 3, PALETTE["BROWN"]),
-        Brick(8, 4, 3, PALETTE["PINK"]),
-        Brick(11, 4, 3, PALETTE["BROWN"]),
+        Brick(2, 4, 3, screen.PALETTE.spring_green),
+        Brick(5, 4, 3, screen.PALETTE.pink),
+        Brick(8, 4, 3, screen.PALETTE.spring_green),
+        Brick(11, 4, 3, screen.PALETTE.pink),
     ]
 
 def update(dt):

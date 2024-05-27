@@ -2,52 +2,28 @@ import time
 from stellar import StellarUnicorn
 from picographics import PicoGraphics, DISPLAY_STELLAR_UNICORN as DISPLAY
 import msa_input
+import screen
 
 # global options
 
-DEBUG_MODE=-1
+DEBUG_MODE=0
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
 stellar = StellarUnicorn()
 graphics = PicoGraphics(DISPLAY)
 
-FPS = 30
-DT_MS = round(1000/FPS)
-
-def hex_to_pen(gfx, hex_color):
-    hex_color = hex_color.lstrip('#')
-    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    pen = gfx.create_pen(r, g, b)
-    return pen
-# (https://lospec.com/palette-list/pico-8):
-PALETTE = {
-    "BLACK": hex_to_pen(graphics, "#000000"),
-    "DARK_BLUE": hex_to_pen(graphics, "#1d2b53"),
-    "DARK_PURPLE": hex_to_pen(graphics, "#7e2553"),
-    "DARK_GREEN": hex_to_pen(graphics, "#008751"),
-    "BROWN": hex_to_pen(graphics, "#ab5236"),
-    "DARK_GRAY": hex_to_pen(graphics, "#5f574f"),
-    "LIGHT_GRAY": hex_to_pen(graphics, "#c2c3c7"),
-    "WHITE": hex_to_pen(graphics, "#fff1e8"),
-    "RED": hex_to_pen(graphics, "#ff004d"),
-    "ORANGE": hex_to_pen(graphics, "#ffa300"),
-    "YELLOW": hex_to_pen(graphics, "#ffec27"),
-    "GREEN": hex_to_pen(graphics, "#00e436"),
-    "BLUE": hex_to_pen(graphics, "#29adff"),
-    "INDIGO": hex_to_pen(graphics, "#83769c"),
-    "PINK": hex_to_pen(graphics, "#ff77a8"),
-    "PEACH": hex_to_pen(graphics, "#ffccaa"),
-    # tetris:
-    "CYAN": hex_to_pen(graphics, "#00b5e2"),
-    "PURPLE": hex_to_pen(graphics, "#b86f50"),
-}
+# global setup
+screen.screen_init(graphics)
 
 BRIGHTNESS = 1
-if DEBUG_MODE != 0:
+if DEBUG_MODE > 0:
     BRIGHTNESS = 0.3 # do not blind myself while working with the board directly
-
 stellar.set_brightness(BRIGHTNESS)
+
+# timer
+FPS = 30
+DT_MS = round(1000/FPS)
 
 # title screen
 
@@ -69,15 +45,17 @@ while True:
         import breakout as GAME
     if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
         import tetris as GAME
+    if DEBUG_MODE == -1:
+        GAME = screen
 
     if GAME:
-        GAME.PALETTE = PALETTE
-        GAME.init()
         break
 
     time.sleep_ms(DT_MS)
 
 # game loop
+
+GAME.init()
 
 while True:
     # board
@@ -92,7 +70,7 @@ while True:
     msa_input.update(DT_MS / 1000)
     GAME.update(DT_MS / 1000)
 
-    graphics.set_pen(PALETTE["BLACK"])
+    graphics.set_pen(screen.PALETTE.black)
     graphics.clear()
     GAME.draw(graphics)
 
