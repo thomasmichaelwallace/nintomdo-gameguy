@@ -14,6 +14,7 @@ class Snake:
         self.v = 0
         self.last_button = 0
         self.dv = 1 - 0.1 # speed increase factor (10% per apple)
+
         self.dir = 0 # 0: up, 1: right, 2: down, 3: left
         self.body: list[tuple[int, int]] = [] # list of (x, y) tuples
         self.init()
@@ -58,6 +59,7 @@ class Snake:
                 print("collision")
                 apple.init()
                 self.init()
+                return
 
             self.body.append((x, y))
 
