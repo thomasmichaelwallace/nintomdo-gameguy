@@ -1,10 +1,10 @@
 
+import random
 from picographics import PicoGraphics
 import screen
 import msa_input
-import random
 
-print("DEBUG_10")
+print("DEBUG_1")
 
 # = entities ===================================================================
 
@@ -12,7 +12,7 @@ class Snake:
     def __init__(self):
         self.t = 0
         self.v = 0
-        self.dv = (1 - 0.1) # speed increase factor (10% per apple)
+        self.dv = 1 - 0.1 # speed increase factor (10% per apple)
         self.dir = 0 # 0: up, 1: right, 2: down, 3: left
         self.body: list[tuple[int, int]] = [] # list of (x, y) tuples
         self.init()
@@ -51,6 +51,13 @@ class Snake:
                 x -= 1
             x = abs(x % screen.WIDTH)
             y = abs(y % screen.HEIGHT)
+
+            # check for collision
+            if self.is_grid_taken(x, y):
+                print("collision")
+                apple.init()
+                self.init()
+
             self.body.append((x, y))
 
             # check for apple
@@ -59,6 +66,7 @@ class Snake:
                 self.v *= self.dv
             else:
                 self.body.pop(0)
+
 
     def is_grid_taken(self, x, y) -> bool:
         for bx, by in self.body:

@@ -8,7 +8,7 @@ WIDTH = StellarUnicorn.WIDTH
 HEIGHT = StellarUnicorn.HEIGHT
 
 # palette will be defined as pens on init()
-class _Pallet():
+class _Pallet(): # pylint: disable=too-few-public-methods
     red = 1
     orange = 2
     yellow = 3
