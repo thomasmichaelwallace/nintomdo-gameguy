@@ -3,7 +3,7 @@ from picographics import PicoGraphics
 import msa_input
 import screen
 
-print("DEBUG_7")
+print("DEBUG_8")
 
 # = entities ===================================================================
 
@@ -64,11 +64,8 @@ class Board: # pylint: disable=too-many-instance-attributes
 
 class Block: # pylint: disable=too-many-instance-attributes
     def __init__(self):
-        # constants
-        self.tx = 0
-        self.move_x_check_interval = 0.25 # five moves per second
-        self.ty = 0
         # init
+        self.ty = 0
         self.x = 0
         self.y = 0
         self.rotation = 0
@@ -86,6 +83,7 @@ class Block: # pylint: disable=too-many-instance-attributes
         self.rotation = 0
         self.x = board.width // 2 - len(self.shape[0]) // 2
         self.y = -len(self.shape)
+        self.ty = 0
         for _, row in enumerate(self.shape[::-1]):
             if any(row):
                 self.y += 1
@@ -138,15 +136,12 @@ class Block: # pylint: disable=too-many-instance-attributes
                 print("rotate blocked")
 
         # x movement
-        self.tx += dt
-        input_x = 0
-        if self.tx > self.move_x_check_interval:
-            self.tx = 0
-            input_x = msa_input.get_tilt_float()
-            if input_x < 0:
-                self.x -= 1
-            elif input_x > 0:
-                self.x += 1
+        input_x = msa_input.get_tilt_as_ticking_button(dt)
+        if input_x < 0:
+            self.x -= 1
+        elif input_x > 0:
+            self.x += 1
+
         if input_x != 0:
             if self.test_collision():
                 if input_x < 0:

@@ -4,7 +4,7 @@ from picographics import PicoGraphics
 import screen
 import msa_input
 
-print("DEBUG_1")
+print("DEBUG_4")
 
 # = entities ===================================================================
 
@@ -12,6 +12,7 @@ class Snake:
     def __init__(self):
         self.t = 0
         self.v = 0
+        self.last_button = 0
         self.dv = 1 - 0.1 # speed increase factor (10% per apple)
         self.dir = 0 # 0: up, 1: right, 2: down, 3: left
         self.body: list[tuple[int, int]] = [] # list of (x, y) tuples
@@ -23,17 +24,21 @@ class Snake:
         self.dir = 1
 
     def update(self, dt):
+        input_x = msa_input.get_tilt_as_button(dt)
+        if input_x != 0:
+            self.last_button = input_x
+
         self.t += dt
         if self.t > self.v:
             self.t = 0
 
             # turn
-            input_x = msa_input.get_tilt_as_button()
-            if input_x < 0:
-                self.dir -= 1
-            elif input_x > 0:
+            if self.last_button < 0:
                 self.dir += 1
+            elif self.last_button > 0:
+                self.dir -= 1
             self.dir = abs(self.dir % 4)
+            self.last_button = 0
 
             # move
             x, y = self.body[-1]

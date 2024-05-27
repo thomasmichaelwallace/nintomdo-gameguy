@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=-2
+DEBUG_MODE=0
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
