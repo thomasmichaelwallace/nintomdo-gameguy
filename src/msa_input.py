@@ -6,11 +6,12 @@ PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
 i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
 msa = BreakoutMSA311(i2c)
 
-INPUT_MIN = 0.075
-INPUT_MAX = 0.6
+INPUT_MIN = 0.2
+INPUT_MAX = 0.7
 
 def get_tilt_float() -> float:
     input_x = -1 * msa.get_x_axis() # x axis is inverted
+    print("input_x", input_x)
     clamp_x = max(min(abs(input_x), INPUT_MAX), INPUT_MIN) - INPUT_MIN
     return math.copysign(clamp_x, input_x) / (INPUT_MAX - INPUT_MIN)
 

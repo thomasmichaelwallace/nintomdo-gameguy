@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=0
+DEBUG_MODE=3
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
@@ -45,6 +45,8 @@ while True:
         import breakout as GAME
     if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
         import tetris as GAME
+    if DEBUG_MODE == 3 or stellar.is_pressed(StellarUnicorn.SWITCH_C):
+        import snake as GAME
     if DEBUG_MODE == -1:
         GAME = screen
 
