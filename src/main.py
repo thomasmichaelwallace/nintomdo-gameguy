@@ -6,7 +6,7 @@ from breakout_msa311 import BreakoutMSA311
 
 # global options
 
-DEBUG_MODE=2
+DEBUG_MODE=1
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
@@ -72,9 +72,9 @@ stellar.update(graphics)
 while True:
     # note that import is relative to main.py in root
     if DEBUG_MODE == 1 or stellar.is_pressed(StellarUnicorn.SWITCH_A):
-        from src import breakout as GAME # pylint: disable=import-error
+        import breakout as GAME
     if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
-        from src import tetris as GAME # pylint: disable=import-error
+        import tetris as GAME
 
     if GAME:
         GAME.PALETTE = PALETTE
