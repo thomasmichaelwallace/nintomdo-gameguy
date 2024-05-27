@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=3
+DEBUG_MODE=-2
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
@@ -49,6 +49,8 @@ while True:
         import snake as GAME
     if DEBUG_MODE == -1:
         GAME = screen
+    if DEBUG_MODE == -2:
+        import input_test as GAME
 
     if GAME:
         break
