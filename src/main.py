@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=3
+DEBUG_MODE=-2
 print("DEBUG_MODE:", DEBUG_MODE)
 
 # global hardware references
@@ -72,7 +72,6 @@ while True:
         stellar.set_brightness(BRIGHTNESS)
 
     # game
-    msa_input.update(DT_MS / 1000)
     GAME.update(DT_MS / 1000)
 
     graphics.set_pen(screen.PALETTE.black)

@@ -3,23 +3,23 @@ import time
 from pimoroni_i2c import PimoroniI2C
 from breakout_msa311 import BreakoutMSA311
 
-print("DEBUG_MSA_04")
+print("DEBUG_MSA_017")
 
 PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
 i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
 msa = BreakoutMSA311(i2c)
-
-INPUT_DEAD_ZONE = 0.2
-INPUT_MAX_ZONE = 0.5
-
-INPUT_ZERO = 0
-CALIBRATION_LIMIT = 0.2 # exclude values outside of this limit when calibrating
 
 PRINT_DEBUG = False
 
 def debug_print(*args):
     if PRINT_DEBUG:
         print(*args)
+
+INPUT_DEAD_ZONE = 0.2
+INPUT_MAX_ZONE = 0.5
+
+INPUT_ZERO = 0
+CALIBRATION_LIMIT = 0.2 # exclude values outside of this limit when calibrating
 
 def msa_input_init():
     global INPUT_ZERO # pylint: disable=global-statement
@@ -63,26 +63,52 @@ def get_tilt_as_button() -> int:
         LAST_TILT_BUTTON = 0
     return 0
 
-T = 0
-JUMP_INTERRUPT = False
+
 JUMP_VELOCITY = 0
-JUMP_COOLDOWN_INTERVAL = 1.0
-
-def get_jump() -> bool:
-    global JUMP_INTERRUPT, T # pylint: disable=global-statement
-    if JUMP_INTERRUPT:
-        debug_print("jump!", JUMP_VELOCITY)
-        JUMP_INTERRUPT = False
-        T = -JUMP_COOLDOWN_INTERVAL
-        return True
-    return False
-
+JUMP_COOLDOWN_INTERVAL = 0.3
 JUMP_G_THRESHOLD = 1.9
+JUMP_STATE = 0
+JUMP_COOLDOWN_TIMER = 0
 
-def update(dt):
-    global T, JUMP_INTERRUPT, JUMP_VELOCITY # pylint: disable=global-statement
+def get_jump(dt) -> bool: # pylint: disable=too-many-return-statements
+    global JUMP_STATE, JUMP_VELOCITY, JUMP_COOLDOWN_TIMER # pylint: disable=global-statement
+
     y = msa.get_y_axis()
-    T += dt
-    if T > 0 and y > JUMP_G_THRESHOLD:
-        JUMP_INTERRUPT = True
+    if JUMP_STATE == 0: # ready for jump
+        if y > JUMP_G_THRESHOLD:
+            debug_print("start jump", y)
+            JUMP_VELOCITY = y
+            JUMP_STATE = 1
+            return True
+        return False
+
+    if JUMP_STATE == 1: # jump in progress
         JUMP_VELOCITY = max(JUMP_VELOCITY, y)
+        if y < JUMP_G_THRESHOLD:
+            JUMP_STATE = 2
+            JUMP_COOLDOWN_TIMER = JUMP_COOLDOWN_INTERVAL
+        return False
+
+    # start/run timer to skip next two states
+    JUMP_COOLDOWN_TIMER -= dt
+    if JUMP_COOLDOWN_TIMER <= 0:
+        debug_print("end jump as cooldown", y, JUMP_VELOCITY)
+        JUMP_STATE = 0
+        return False
+
+    if JUMP_STATE == 2: # jump might be complete, but maybe waiting for rebound
+        debug_print("rebound check", y, JUMP_VELOCITY)
+        if y > JUMP_G_THRESHOLD:
+            debug_print("rebound", y, JUMP_VELOCITY)
+            JUMP_STATE = 3
+            JUMP_COOLDOWN_TIMER = JUMP_COOLDOWN_INTERVAL # reset-timer
+        return False
+
+    if JUMP_STATE == 3: # rebound in progress
+        if y < JUMP_G_THRESHOLD:
+            debug_print("rebound ended", y, JUMP_VELOCITY)
+            JUMP_STATE = 0 # short-circuit timer
+        return False
+
+    print("jump_state_error", JUMP_STATE)
+    return False

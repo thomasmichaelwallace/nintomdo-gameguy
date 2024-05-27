@@ -131,7 +131,7 @@ class Block: # pylint: disable=too-many-instance-attributes
 
     def update(self, dt):
         # rotate
-        if msa_input.get_jump():
+        if msa_input.get_jump(dt):
             if self.try_rotate_with_kick():
                 pass
             else:
