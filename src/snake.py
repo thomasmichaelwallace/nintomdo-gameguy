@@ -2,6 +2,7 @@
 from picographics import PicoGraphics
 import screen
 import msa_input
+import random
 
 print("DEBUG_10")
 
@@ -11,6 +12,7 @@ class Snake:
     def __init__(self):
         self.t = 0
         self.v = 0
+        self.dv = (1 - 0.1) # speed increase factor (10% per apple)
         self.dir = 0 # 0: up, 1: right, 2: down, 3: left
         self.body: list[tuple[int, int]] = [] # list of (x, y) tuples
         self.init()
@@ -50,23 +52,55 @@ class Snake:
             x = abs(x % screen.WIDTH)
             y = abs(y % screen.HEIGHT)
             self.body.append((x, y))
-            self.body.pop(0)
+
+            # check for apple
+            if x == apple.x and y == apple.y:
+                apple.init()
+                self.v *= self.dv
+            else:
+                self.body.pop(0)
+
+    def is_grid_taken(self, x, y) -> bool:
+        for bx, by in self.body:
+            if bx == x and by == y:
+                return True
+        return False
 
     def draw(self, graphics: PicoGraphics):
         graphics.set_pen(screen.PALETTE.yellow)
         for x, y in self.body:
             graphics.pixel(x, y)
 
+class Apple:
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.init()
+
+    def init(self):
+        while True:
+            self.x = random.randint(0, screen.WIDTH)
+            self.y = random.randint(0, screen.HEIGHT)
+            if not snake.is_grid_taken(self.x, self.y):
+                break
+
+    def draw(self, graphics: PicoGraphics):
+        graphics.set_pen(screen.PALETTE.green)
+        graphics.pixel(self.x, self.y)
+
 # = game loop ==================================================================
 
 snake: Snake
+apple: Apple
 
 def init():
-    global snake # pylint: disable=global-statement
+    global snake, apple # pylint: disable=global-statement
     snake = Snake()
+    apple = Apple()
 
 def update(dt):
     snake.update(dt)
 
 def draw(graphics: PicoGraphics):
     snake.draw(graphics)
+    apple.draw(graphics)
