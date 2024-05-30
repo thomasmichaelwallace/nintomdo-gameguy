@@ -19,6 +19,10 @@ if DEBUG_MODE > 0:
     BRIGHTNESS = 0.3 # do not blind myself while working with the board directly
 stellar.set_brightness(BRIGHTNESS)
 
+# timer
+FPS = 30
+DT_MS = round(1000/FPS)
+
 # logo
 
 graphics.set_font("bitmap3x5")
@@ -31,36 +35,62 @@ for tx in range(-16, TITLE_WIDTH + 16, 1):
     graphics.set_pen(screen.PALETTE.white)
     graphics.text("game-guy", -tx, 8, scale=1, fixed_width=True)
     stellar.update(graphics)
-    time.sleep_ms(25)
+    time.sleep_ms(DT_MS)
 
 # calibrate input
 
 msa_input.msa_input_init()
 
-# timer
-FPS = 30
-DT_MS = round(1000/FPS)
-
 # selection screen
 
-GAME = None
-while True:
-    # note that import is relative to main.py in root
-    if DEBUG_MODE == 1 or stellar.is_pressed(StellarUnicorn.SWITCH_A):
-        import breakout as GAME
-    if DEBUG_MODE == 2 or stellar.is_pressed(StellarUnicorn.SWITCH_B):
-        import tetris as GAME
-    if DEBUG_MODE == 3 or stellar.is_pressed(StellarUnicorn.SWITCH_C):
-        import snake as GAME
-    if DEBUG_MODE == -1:
-        GAME = screen
-    if DEBUG_MODE == -2:
-        import input_test as GAME
-
-    if GAME:
+SELECTION=0
+SELECTED=DEBUG_MODE
+graphics.set_font("bitmap8")
+while SELECTED == 0:
+    if msa_input.get_jump(DT_MS / 1000):
+        print("SELECTED:", SELECTED)
+        SELECTED = SELECTION
         break
 
+    INPUT_X = msa_input.get_tilt_as_button(DT_MS / 1000)
+    if INPUT_X == 1:
+        SELECTION = (SELECTION + 1) % 3
+    if INPUT_X == -1:
+        SELECTION = (SELECTION - 1) % 3
+
+    graphics.set_pen(screen.PALETTE.black)
+    graphics.clear()
+
+    if SELECTION == 0:
+        graphics.set_pen(screen.PALETTE.green)
+        graphics.text("B", 4, 1)
+    elif SELECTION == 1:
+        graphics.set_pen(screen.PALETTE.red)
+        graphics.text("T", 3, 1)
+    elif SELECTION == 2:
+        graphics.set_pen(screen.PALETTE.blue)
+        graphics.text("S", 4, 1)
+    else:
+        graphics.set_pen(screen.PALETTE.white)
+        graphics.text("?", 0, 1)
+
+    stellar.update(graphics)
+
     time.sleep_ms(DT_MS)
+
+
+GAME = None
+# note that import is relative to main.py in root
+if SELECTED == 0:
+    import breakout as GAME
+elif SELECTED == 1:
+    import tetris as GAME
+elif SELECTED == 2:
+    import snake as GAME
+elif SELECTED == -2:
+    import input_test as GAME
+else:
+    GAME = screen
 
 # game loop
 

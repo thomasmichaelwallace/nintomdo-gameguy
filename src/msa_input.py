@@ -1,5 +1,4 @@
 import math
-import time
 from pimoroni_i2c import PimoroniI2C
 from breakout_msa311 import BreakoutMSA311
 
@@ -25,7 +24,6 @@ def msa_input_init():
     global INPUT_ZERO # pylint: disable=global-statement
     print("staring calibration [hold]")
     readings = [0.0]
-    time.sleep_ms(1000) # wait for sensor to settle
     print("calibrating...")
     for _ in range(100):
         x = msa.get_x_axis()
@@ -35,7 +33,6 @@ def msa_input_init():
             print("skipped", x)
     INPUT_ZERO = sum(readings) / len(readings)
     print("calibrated", INPUT_ZERO)
-    time.sleep_ms(250) # allow me to read this
 
 def get_tilt_float() -> float:
     raw_x = msa.get_x_axis()
