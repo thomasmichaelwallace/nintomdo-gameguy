@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=1
+DEBUG_MODE=0
 print("DEBUG_MODE:", DEBUG_MODE)
 print("DEBUG_123")
 
