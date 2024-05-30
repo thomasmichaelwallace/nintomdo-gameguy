@@ -88,6 +88,8 @@ elif SELECTED == 2:
     import tetris as GAME
 elif SELECTED == 3:
     import snake as GAME
+elif SELECTED == 4:
+    import runner as GAME
 elif SELECTED == -2:
     import input_test as GAME
 else:
