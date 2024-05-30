@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=0
+DEBUG_MODE=3
 print("DEBUG_MODE:", DEBUG_MODE)
 print("DEBUG_123")
 
@@ -48,8 +48,8 @@ SELECTED=DEBUG_MODE
 graphics.set_font("bitmap8")
 while SELECTED == 0:
     if msa_input.get_jump(DT_MS / 1000):
-        print("SELECTED:", SELECTED)
-        SELECTED = SELECTION
+        print("SELECTED:", SELECTED + 1)
+        SELECTED = SELECTION + 1
         break
 
     INPUT_X = msa_input.get_tilt_as_button(DT_MS / 1000)
@@ -81,11 +81,11 @@ while SELECTED == 0:
 
 GAME = None
 # note that import is relative to main.py in root
-if SELECTED == 0:
+if SELECTED == 1:
     import breakout as GAME
-elif SELECTED == 1:
-    import tetris as GAME
 elif SELECTED == 2:
+    import tetris as GAME
+elif SELECTED == 3:
     import snake as GAME
 elif SELECTED == -2:
     import input_test as GAME

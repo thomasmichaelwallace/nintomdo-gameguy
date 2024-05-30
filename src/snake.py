@@ -60,6 +60,11 @@ class Snake:
                 apple.init()
                 self.init()
                 return
+            if course.is_wall(x, y):
+                print("wall collision")
+                apple.init()
+                self.init()
+                return
 
             self.body.append((x, y))
 
@@ -92,7 +97,7 @@ class Apple:
         while True:
             self.x = random.randint(0, screen.WIDTH - 1)
             self.y = random.randint(0, screen.HEIGHT - 1)
-            if not snake.is_grid_taken(self.x, self.y):
+            if not snake.is_grid_taken(self.x, self.y) and not course.is_wall(self.x, self.y):
                 print("apple at", self.x, self.y)
                 break
 
@@ -100,13 +105,50 @@ class Apple:
         graphics.set_pen(screen.PALETTE.green)
         graphics.pixel(self.x, self.y)
 
+class Course:
+    def __init__(self):
+        walls = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ]
+        self.px = []
+        for y, row in enumerate(walls):
+            for x, cell in enumerate(row):
+                if cell == 1:
+                    self.px.append((x, y))
+
+
+    def draw(self, graphics: PicoGraphics):
+        for x, y in self.px:
+            graphics.set_pen(screen.PALETTE.red)
+            graphics.pixel(x, y)
+
+    def is_wall(self, x, y) -> bool:
+        return (x, y) in self.px
+
 # = game loop ==================================================================
 
 snake: Snake
 apple: Apple
+course: Course
 
 def init():
-    global snake, apple # pylint: disable=global-statement
+    global snake, apple, course # pylint: disable=global-statement
+    course = Course()
     snake = Snake()
     apple = Apple()
 
@@ -114,5 +156,6 @@ def update(dt):
     snake.update(dt)
 
 def draw(graphics: PicoGraphics):
+    course.draw(graphics)
     snake.draw(graphics)
     apple.draw(graphics)
