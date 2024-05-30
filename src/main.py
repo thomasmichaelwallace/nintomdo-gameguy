@@ -55,9 +55,9 @@ while SELECTED == 0:
 
     INPUT_X = msa_input.get_tilt_as_button(DT_MS / 1000)
     if INPUT_X == 1:
-        SELECTION = (SELECTION + 1) % 3
+        SELECTION = (SELECTION + 1) % 4
     if INPUT_X == -1:
-        SELECTION = (SELECTION - 1) % 3
+        SELECTION = (SELECTION - 1) % 4
 
     graphics.set_pen(screen.PALETTE.black)
     graphics.clear()
@@ -71,6 +71,9 @@ while SELECTED == 0:
     elif SELECTION == 2:
         graphics.set_pen(screen.PALETTE.blue)
         graphics.text("S", 4, 1)
+    elif SELECTION == 3:
+        graphics.set_pen(screen.PALETTE.yellow)
+        graphics.text("R", 4, 1)
     else:
         graphics.set_pen(screen.PALETTE.white)
         graphics.text("?", 0, 1)
