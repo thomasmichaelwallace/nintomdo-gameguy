@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=0
+DEBUG_MODE=4
 print("DEBUG_MODE:", DEBUG_MODE)
 print("DEBUG_123")
 
@@ -16,7 +16,7 @@ graphics = PicoGraphics(DISPLAY)
 screen.screen_init(graphics)
 BRIGHTNESS = 1
 if DEBUG_MODE > 0:
-    BRIGHTNESS = 0.3 # do not blind myself while working with the board directly
+    BRIGHTNESS = 1 # do not blind myself while working with the board directly
 stellar.set_brightness(BRIGHTNESS)
 
 # timer
