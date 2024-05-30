@@ -3,7 +3,7 @@ from picographics import PicoGraphics
 import msa_input
 import screen
 
-print("DEBUG_6")
+print("DEBUG_7")
 
 # = entities ===================================================================
 
@@ -105,6 +105,7 @@ class Ball:
             if check_collision(self, b):
                 bricks.remove(b)
                 self.vy = -self.vy
+                self.vy *= 1.1
 
     def draw(self, graphics: PicoGraphics):
         graphics.set_pen(screen.PALETTE.white)
