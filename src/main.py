@@ -6,7 +6,7 @@ import screen
 
 # global options
 
-DEBUG_MODE=3
+DEBUG_MODE=1
 print("DEBUG_MODE:", DEBUG_MODE)
 print("DEBUG_123")
 
@@ -25,17 +25,18 @@ DT_MS = round(1000/FPS)
 
 # logo
 
-graphics.set_font("bitmap3x5")
-TITLE_WIDTH = graphics.measure_text("nintomdo", scale=1, fixed_width=True)
-for tx in range(-16, TITLE_WIDTH + 16, 1):
-    graphics.set_pen(screen.PALETTE.black)
-    graphics.clear()
-    graphics.set_pen(screen.PALETTE.red)
-    graphics.text("nintomdo", -tx, 1, scale=1, fixed_width=True)
-    graphics.set_pen(screen.PALETTE.white)
-    graphics.text("game-guy", -tx, 8, scale=1, fixed_width=True)
-    stellar.update(graphics)
-    time.sleep_ms(DT_MS)
+if DEBUG_MODE == 0:
+    graphics.set_font("bitmap3x5")
+    TITLE_WIDTH = graphics.measure_text("nintomdo", scale=1, fixed_width=True)
+    for tx in range(-16, TITLE_WIDTH + 16, 1):
+        graphics.set_pen(screen.PALETTE.black)
+        graphics.clear()
+        graphics.set_pen(screen.PALETTE.red)
+        graphics.text("nintomdo", -tx, 1, scale=1, fixed_width=True)
+        graphics.set_pen(screen.PALETTE.white)
+        graphics.text("game-guy", -tx, 8, scale=1, fixed_width=True)
+        stellar.update(graphics)
+        time.sleep_ms(DT_MS)
 
 # calibrate input
 

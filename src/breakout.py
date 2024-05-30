@@ -3,7 +3,7 @@ from picographics import PicoGraphics
 import msa_input
 import screen
 
-print("DEBUG_9")
+print("DEBUG_6")
 
 # = entities ===================================================================
 
@@ -13,7 +13,7 @@ class Paddle: # pylint: disable=too-many-instance-attributes
         self.width = 5
         # position
         self.y = screen.HEIGHT - 2
-        self.x = (screen.WIDTH - self.width) // 2
+        self.x = 0
         # physics
         self.v = 0
         self.v_max = screen.WIDTH * 2.5
@@ -21,6 +21,10 @@ class Paddle: # pylint: disable=too-many-instance-attributes
         self.bounce_c = 0.8
         # input
         self.input_f = self.v_max
+
+    def init(self):
+        self.x = (screen.WIDTH - self.width) // 2
+        self.v = 0
 
     def update(self, dt):
         target_v = self.input_f * msa_input.get_tilt_float()
@@ -55,7 +59,6 @@ class Ball:
         self.y = 0
         self.vx = 0
         self.vy = 0
-        self.init()
 
     def init(self):
         self.y = paddle.y - 1
@@ -80,7 +83,7 @@ class Ball:
 
         # game over
         if self.y > screen.HEIGHT + 1:
-            self.init()
+            level.ball_lost()
 
         # hits paddle
         if check_collision(self, paddle):
@@ -109,6 +112,53 @@ class Ball:
         p_y = round(self.y)
         graphics.pixel(p_x, p_y)
 
+class Level:
+    def __init__(self):
+        self.lives = 0
+        self.init()
+
+    def init(self):
+        self.lives = 3
+        bricks.clear()
+        for b in [
+            # row 1
+            Brick(0, 1, 4, screen.PALETTE.green),
+            Brick(4, 1, 4, screen.PALETTE.red),
+            Brick(8, 1, 4, screen.PALETTE.green),
+            Brick(12, 1, 4, screen.PALETTE.red),
+            # row 2
+            Brick(2, 2, 3, screen.PALETTE.orange),
+            Brick(5, 2, 3, screen.PALETTE.azure),
+            Brick(8, 2, 3, screen.PALETTE.orange),
+            Brick(11, 2, 3, screen.PALETTE.azure),
+            # row 3
+            Brick(0, 3, 4, screen.PALETTE.indigo),
+            Brick(4, 3, 4, screen.PALETTE.yellow),
+            Brick(8, 3, 4, screen.PALETTE.indigo),
+            Brick(12, 3, 4, screen.PALETTE.yellow),
+            # row 4
+            Brick(2, 4, 3, screen.PALETTE.spring_green),
+            Brick(5, 4, 3, screen.PALETTE.pink),
+            Brick(8, 4, 3, screen.PALETTE.spring_green),
+            Brick(11, 4, 3, screen.PALETTE.pink),
+        ]:
+            bricks.append(b)
+        paddle.init()
+        ball.init()
+
+
+    def draw(self, graphics: PicoGraphics):
+        graphics.set_pen(screen.PALETTE.white)
+        for i in range(self.lives):
+            graphics.pixel(i * 2, 0)
+
+    def ball_lost(self):
+        self.lives -= 1
+        if self.lives < 0:
+            self.init()
+        else:
+            ball.init()
+
 def check_collision(pixel, line):
     p_x = round(pixel.x)
     p_y = round(pixel.y)
@@ -135,42 +185,23 @@ def reflect_vector(vm, nm):
 # init
 paddle: Paddle
 ball: Ball
-bricks: list[Brick]
+bricks: list[Brick] = []
+level: Level
 
 # loop
 
 def init():
-    global paddle, ball, bricks # pylint: disable=global-statement
+    global paddle, ball, level # pylint: disable=global-statement
     paddle = Paddle()
     ball = Ball()
-    bricks = [
-        # row 1
-        Brick(0, 1, 4, screen.PALETTE.green),
-        Brick(4, 1, 4, screen.PALETTE.red),
-        Brick(8, 1, 4, screen.PALETTE.green),
-        Brick(12, 1, 4, screen.PALETTE.red),
-        # row 2
-        Brick(2, 2, 3, screen.PALETTE.orange),
-        Brick(5, 2, 3, screen.PALETTE.azure),
-        Brick(8, 2, 3, screen.PALETTE.orange),
-        Brick(11, 2, 3, screen.PALETTE.azure),
-        # row 3
-        Brick(0, 3, 4, screen.PALETTE.indigo),
-        Brick(4, 3, 4, screen.PALETTE.yellow),
-        Brick(8, 3, 4, screen.PALETTE.indigo),
-        Brick(12, 3, 4, screen.PALETTE.yellow),
-        # row 4
-        Brick(2, 4, 3, screen.PALETTE.spring_green),
-        Brick(5, 4, 3, screen.PALETTE.pink),
-        Brick(8, 4, 3, screen.PALETTE.spring_green),
-        Brick(11, 4, 3, screen.PALETTE.pink),
-    ]
+    level = Level()
 
 def update(dt):
     paddle.update(dt)
     ball.update(dt)
 
 def draw(graphics: PicoGraphics):
+    level.draw(graphics)
     paddle.draw(graphics)
     ball.draw(graphics)
     for brick in bricks:
