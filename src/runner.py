@@ -16,6 +16,7 @@ class Runner:
         self.h = 0
         self.action_length = 0
         self.action = 0
+        self.t = 0
         self.init()
 
     def init(self):
@@ -25,7 +26,7 @@ class Runner:
         self.y = 6
         self.action_length = 0
         self.action = 0
-        # self.is_ducking = False
+        self.t = 0
 
     def draw(self, graphics: PicoGraphics):
         graphics.set_pen(screen.PALETTE.white)
@@ -34,6 +35,10 @@ class Runner:
         graphics.pixel(self.x + 1, self.y + 1)
 
     def tick(self):
+        self.t += 1
+        if self.t > 16:
+            level.v *= 0.9
+            self.t = 0
         if self.action > 0:
             self.action_length -= 1
             print("jump_length:", self.action_length)
@@ -92,7 +97,7 @@ class Level:
             self.spikes.append((1, 16))
         else:
             last_spike = self.spikes[-1][1]
-            if last_spike < 10:
+            if last_spike < 9:
                 if random.random() < 0.2:
                     if random.random() < 0.5:
                         self.spikes.append((1, 16))
