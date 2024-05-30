@@ -1,4 +1,4 @@
-# tilt-out
+# nintomdo game guy
 
 A set of games to run on a t-shirt and control with your body:
 
