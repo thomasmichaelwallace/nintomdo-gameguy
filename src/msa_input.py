@@ -2,7 +2,7 @@ import math
 from pimoroni_i2c import PimoroniI2C
 from breakout_msa311 import BreakoutMSA311
 
-print("DEBUG_MSA_019")
+print("DEBUG_MSA_020")
 
 PINS_BREAKOUT_GARDEN = {"sda": 4, "scl": 5}
 i2c = PimoroniI2C(**PINS_BREAKOUT_GARDEN)
@@ -14,8 +14,8 @@ def debug_print(*args):
     if PRINT_DEBUG:
         print(*args)
 
-INPUT_DEAD_ZONE = 0.2
-INPUT_MAX_ZONE = 0.5
+INPUT_DEAD_ZONE = 0.3 # 0.2-0.5 if top of shirt
+INPUT_MAX_ZONE = 0.6
 
 INPUT_ZERO = 0
 CALIBRATION_LIMIT = 0.2 # exclude values outside of this limit when calibrating
@@ -119,8 +119,8 @@ def get_tilt_as_ticking_button(dt) -> int:
     return value
 
 JUMP_VELOCITY = 0
-JUMP_COOLDOWN_INTERVAL = 0.3
-JUMP_G_THRESHOLD = 1.9
+JUMP_COOLDOWN_INTERVAL = 0.5 # 0.3 if top of shirt
+JUMP_G_THRESHOLD = 1.95 # 1.9 if top of shirt
 JUMP_STATE = 0
 JUMP_COOLDOWN_TIMER = 0
 
