@@ -14,7 +14,7 @@ print("DEBUG_123")
 stellar = StellarUnicorn()
 graphics = PicoGraphics(DISPLAY)
 screen.screen_init(graphics)
-BRIGHTNESS = 1
+BRIGHTNESS = 0.5
 if DEBUG_MODE > 0:
     BRIGHTNESS = 1 # do not blind myself while working with the board directly
 stellar.set_brightness(BRIGHTNESS)
@@ -58,6 +58,19 @@ while SELECTED == 0:
         SELECTION = (SELECTION + 1) % 4
     if INPUT_X == -1:
         SELECTION = (SELECTION - 1) % 4
+
+    if stellar.is_pressed(StellarUnicorn.SWITCH_A):
+        SELECTED = 1
+        break
+    if stellar.is_pressed(StellarUnicorn.SWITCH_B):
+        SELECTED = 2
+        break
+    if stellar.is_pressed(StellarUnicorn.SWITCH_C):
+        SELECTED = 3
+        break
+    if stellar.is_pressed(StellarUnicorn.SWITCH_D):
+        SELECTED = 4
+        break
 
     graphics.set_pen(screen.PALETTE.black)
     graphics.clear()
