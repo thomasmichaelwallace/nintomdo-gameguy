@@ -1,6 +1,6 @@
 import sys
 
-print("thomasmichaelwallace/tilt-out")
+print("thomasmichaelwallace/nintomdo-gameguy")
 
 # correct import path when running on the Pico
 sys.path.insert(0, '/src')
